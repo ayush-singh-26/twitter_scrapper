@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Twitter Trends</title>
+    <style>
+        #loading{
+            display: none;
+        }
+    </style>
+    <script>
+        function runScript() {
+            toggleLoading(true);
+            fetch('/run-script')
+                .then(response => response.text())
+                .then(data => {
+                    fetchResults();
+                })
+                .catch(error => {
+                    console.error('Error running script:', error);
+                    toggleLoading(false);
+                    alert("An error occurred while running the script. Please try again.");
+                });
+        }
+
+        function fetchResults() {
+            fetch('/results')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("results").innerHTML = `
+                        <h1>Trending Topics</h1>
+                        <p>These are the most happening topics as on <strong>${data.timestamp}</strong>:</p>
+                        <ul>
+                            <li>${data.trend1}</li>
+                            <li>${data.trend2}</li>
+                            <li>${data.trend3}</li>
+                            <li>${data.trend4}</li>
+                            <li>${data.trend5}</li>
+                        </ul>
+                        <p>The IP address used for this query was <strong>${data.ip_address}</strong>.</p>
+
+                        <h3>Here’s a JSON extract of this record from the MongoDB:</h3>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                    document.getElementById("refetch").style.display = "block";
+                })
+                .catch(error => {
+                    console.error('Error fetching results:', error);
+                    alert("An error occurred while fetching results. Please try again.");
+                })
+                .finally(() => {
+                    toggleLoading(false);
+                });
+            }
+            
+            function toggleLoading(isLoading) {
+                const loadingElement = document.getElementById("loading");
+                const buttons = document.querySelectorAll("button");
+                loadingElement.style.display = isLoading ? "block" : "none";
+                buttons.forEach(button => button.disabled = isLoading);
+        }
+    </script>
+</head>
+<body>
+    <button onclick="runScript()">Click here to fetch the latest trends</button>
+    <p id="loading">Fetching data from X(Twitter)... Please wait.</p>
+    <div id="results"></div>
+    <button id="refetch" onclick="runScript()">Click here to refresh trends</button>
+</body>
+</html>
